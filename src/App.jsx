@@ -1,4 +1,5 @@
 import SessionCard from './session/SessionCard.jsx'
+import SessionForm from './session/SessionForm.jsx'
 
 import { useState } from 'react'
 
@@ -17,6 +18,13 @@ function App() {
       lastPlayed: '2026-10-31'
     },
 ])
+
+  const handleAddSession = (newSession) => {
+    setSessions((previousSessions) => [
+      ...previousSessions,
+      newSession,
+    ])
+  }
 
   const updateSubGoal = (sessionId, subGoalId) => {
     setSessions((previousSessions) =>
@@ -40,6 +48,7 @@ function App() {
 
   return (
     <main>
+      <SessionForm onAddSession={handleAddSession}></SessionForm>
       {sessions.map((session) => (
         <SessionCard key={session.id} session={session} onToggleSubGoal={updateSubGoal}/>
       ))}
