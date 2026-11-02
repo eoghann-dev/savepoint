@@ -47,6 +47,13 @@ export default function SessionForm({ onAddSession }) {
         }
 
         onAddSession(newSession)
+
+        setGameName('')
+        setCurrentGoal('')
+        setSubGoals([])
+        setSubGoal('')
+        setNotes('')
+        setNextTask('')
     }
 
     return (
@@ -81,15 +88,15 @@ export default function SessionForm({ onAddSession }) {
 
                     <ul>
                         {subGoals.map((item) => (
-                            <div>
-                                <li key={item.id}>{item.text}</li>
+                            <li key={item.id}>
+                                <span>{item.text}</span>
                                 <button
                                     type="button"
                                     onClick={() => handleDeleteSubGoal(item.id)}
                                 >
                                     Delete
                                 </button>
-                            </div>
+                            </li>
                         ))}
                     </ul>
 

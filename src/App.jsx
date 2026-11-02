@@ -1,5 +1,8 @@
-import SessionCard from './session/SessionCard.jsx'
+import SessionList from './session/SessionList.jsx'
 import SessionForm from './session/SessionForm.jsx'
+import SessionCard from './session/SessionCard.jsx'
+
+import placeholderGame from './assets/placeholder-game.webp'
 
 import { useState } from 'react'
 
@@ -8,6 +11,7 @@ function App() {
     {
       id: 1,
       game: 'Minecraft',
+      artwork: placeholderGame,
       currentGoal: 'Build an iron farm',
       subGoals: [
         { id: 1, text: 'Collect villagers', completed: true },
@@ -17,7 +21,13 @@ function App() {
       nextTask: 'Move the zombie into the holding chamber.',
       lastPlayed: '2026-10-31'
     },
-])
+  ])
+
+  const [selectedSessionId, setSelectedSessionId] = useState(null)
+
+  const selectedSession = sessions.find(
+    (session) => session.id === selectedSessionId,
+  )
 
   const handleAddSession = (newSession) => {
     setSessions((previousSessions) => [
@@ -49,9 +59,14 @@ function App() {
   return (
     <main>
       <SessionForm onAddSession={handleAddSession}></SessionForm>
-      {sessions.map((session) => (
-        <SessionCard key={session.id} session={session} onToggleSubGoal={updateSubGoal}/>
-      ))}
+      <SessionList sessions={sessions} onSelect={setSelectedSessionId}/>
+
+      {selectedSession && (
+        <SessionCard
+          session={selectedSession}
+          onToggleSubGoal={updateSubGoal}
+        />
+      )}
     </main>
   )
 }
