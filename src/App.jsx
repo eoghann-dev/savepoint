@@ -4,24 +4,30 @@ import SessionCard from './session/SessionCard.jsx'
 
 import placeholderGame from './assets/placeholder-game.webp'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 function App() {
-  const [sessions, setSessions] = useState([
-    {
-      id: 1,
-      game: 'Minecraft',
-      artwork: placeholderGame,
-      currentGoal: 'Build an iron farm',
-      subGoals: [
-        { id: 1, text: 'Collect villagers', completed: true },
-        { id: 2, text: 'Build the holding chamber', completed: false },
-      ],
-      notes: 'Need more rails and temporary blocks.',
-      nextTask: 'Move the zombie into the holding chamber.',
-      lastPlayed: '2026-10-31'
-    },
-  ])
+  const [sessions, setSessions] = useState(() => {
+    const savedSessions = localStorage.getItem('sessions')
+
+    return savedSessions 
+      ? JSON.parse(savedSessions) 
+      : [
+          {
+            id: 1,
+            game: 'Minecraft',
+            artwork: placeholderGame,
+            currentGoal: 'Build an iron farm',
+            subGoals: [
+              { id: 1, text: 'Collect villagers', completed: true },
+              { id: 2, text: 'Build the holding chamber', completed: false },
+            ],
+            notes: 'Need more rails and temporary blocks.',
+            nextTask: 'Move the zombie into the holding chamber.',
+            lastPlayed: '2026-10-31'
+          },
+        ]
+  })
 
   const [selectedSessionId, setSelectedSessionId] = useState(null)
 
@@ -80,6 +86,10 @@ function App() {
   }, {})
 
   const latestSessions = Object.values(latestSessionsByGame)
+
+  useEffect(() => {
+    localStorage.setItem('sessions', JSON.stringify(sessions))
+  }, [sessions])
 
   return (
     <main>
