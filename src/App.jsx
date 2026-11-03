@@ -7,27 +7,47 @@ import placeholderGame from './assets/placeholder-game.webp'
 import { useEffect, useState } from 'react'
 
 function App() {
+  const defaultSessions = [
+    {
+      id: 'sample-minecraft',
+      game: 'Minecraft',
+      artwork: placeholderGame,
+      currentGoal: 'Build an iron farm',
+      subGoals: [
+        { id: 'subgoal-1', text: 'Collect villagers', completed: true },
+        { id: 'subgoal-2', text: 'Build the holding chamber', completed: false },
+      ],
+      notes: 'Need more rails and temporary blocks.',
+      nextTask: 'Move the zombie into the holding chamber.',
+      lastPlayed: '2026-10-31',
+    },
+  ]
+
   const [sessions, setSessions] = useState(() => {
     const savedSessions = localStorage.getItem('sessions')
 
-    return savedSessions 
-      ? JSON.parse(savedSessions) 
-      : [
-          {
-            id: 1,
-            game: 'Minecraft',
-            artwork: placeholderGame,
-            currentGoal: 'Build an iron farm',
-            subGoals: [
-              { id: 1, text: 'Collect villagers', completed: true },
-              { id: 2, text: 'Build the holding chamber', completed: false },
-            ],
-            notes: 'Need more rails and temporary blocks.',
-            nextTask: 'Move the zombie into the holding chamber.',
-            lastPlayed: '2026-10-31'
-          },
-        ]
+    if (!savedSessions) {
+      return defaultSessions
+    }
+
+    try {
+      const parsedSessions = JSON.parse(savedSessions)
+
+      if (!Array.isArray(parsedSessions)) {
+        console.error('Saved sessions must be an array')
+        return defaultSessions
+      }
+
+      return parsedSessions
+    } catch (error) {
+      console.error('Failed to parse saved sessions:', error)
+      return defaultSessions
+    }
   })
+
+  useEffect(() => {
+    localStorage.setItem('sessions', JSON.stringify(sessions))
+  }, [sessions])
 
   const [selectedSessionId, setSelectedSessionId] = useState(null)
 
@@ -86,10 +106,6 @@ function App() {
   }, {})
 
   const latestSessions = Object.values(latestSessionsByGame)
-
-  useEffect(() => {
-    localStorage.setItem('sessions', JSON.stringify(sessions))
-  }, [sessions])
 
   return (
     <main>
