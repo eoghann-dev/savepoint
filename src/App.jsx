@@ -36,6 +36,16 @@ function App() {
     ])
   }
 
+  const handleDeleteSession = (sessionId) => {
+    setSessions((previousSessions) =>
+      previousSessions.filter((session) => session.id !== sessionId),
+    )
+
+    if (selectedSessionId === sessionId) {
+      setSelectedSessionId(null)
+    }
+  }
+
   const updateSubGoal = (sessionId, subGoalId) => {
     setSessions((previousSessions) =>
       previousSessions.map((session) => {
@@ -56,15 +66,31 @@ function App() {
     )
   }
 
+  const latestSessionsByGame = sessions.reduce((games, session) => {
+    const existingSession = games[session.game]
+
+    if (
+      !existingSession ||
+      session.lastPlayed > existingSession.lastPlayed
+    ) {
+      games[session.game] = session
+    }
+
+    return games
+  }, {})
+
+  const latestSessions = Object.values(latestSessionsByGame)
+
   return (
     <main>
       <SessionForm onAddSession={handleAddSession}></SessionForm>
-      <SessionList sessions={sessions} onSelect={setSelectedSessionId}/>
+      <SessionList sessions={latestSessions} onSelect={setSelectedSessionId}/>
 
       {selectedSession && (
         <SessionCard
           session={selectedSession}
           onToggleSubGoal={updateSubGoal}
+          onDelete={handleDeleteSession}
         />
       )}
     </main>
