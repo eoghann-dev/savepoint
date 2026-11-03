@@ -107,18 +107,25 @@ function App() {
 
   const latestSessions = Object.values(latestSessionsByGame)
 
+  const selectedGameSessions = selectedSession
+    ? sessions
+        .filter((session) => session.game === selectedSession.game)
+        .sort((a, b) => b.lastPlayed.localeCompare(a.lastPlayed))
+    : []
+
   return (
     <main>
       <SessionForm onAddSession={handleAddSession}></SessionForm>
       <SessionList sessions={latestSessions} onSelect={setSelectedSessionId}/>
 
-      {selectedSession && (
+      {selectedGameSessions.map((session) => (
         <SessionCard
-          session={selectedSession}
+          key={session.id}
+          session={session}
           onToggleSubGoal={updateSubGoal}
           onDelete={handleDeleteSession}
         />
-      )}
+      ))}
     </main>
   )
 }
