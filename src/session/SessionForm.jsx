@@ -6,6 +6,8 @@ export default function SessionForm({ onAddSession }) {
     const [error, setError] = useState('');
 
     const [gameName, setGameName] = useState('');
+    const [selectedGame, setSelectedGame] = useState(null);
+    const [selectedGameDetails, setSelectedGameDetails] = useState(null);
     const [currentGoal, setCurrentGoal] = useState('');
     const [subGoals, setSubGoals] = useState([]);
     const [subGoal, setSubGoal] = useState('');
@@ -29,7 +31,10 @@ export default function SessionForm({ onAddSession }) {
                 }
 
                 const result = await response.json();
-                const games = Object.values(result)
+                const games = Object.entries(result).map(([id, game]) => ({
+                    id: Number(id),
+                    ...game,
+                }))
                 setSuggestions(games)
                 console.log(result);
             } catch (error) {
@@ -44,6 +49,37 @@ export default function SessionForm({ onAddSession }) {
             clearTimeout(timeoutId)
         }
     }, [gameName])
+
+    useEffect(() => {
+        if (!selectedGame) return
+
+        const fetchGameDetails = async () => {
+            try {
+                const response = await fetch(
+                    `https://app.lizardbyte.dev/GameDB/games/${selectedGame.id}.json`,
+                )
+
+                if (!response.ok) {
+                    throw new Error(`Response status: ${response.status}`)
+                }
+
+                const details = await response.json()
+
+                setSelectedGameDetails({
+                    id: details.id,
+                    name: details.name,
+                    artwork: details.cover?.url
+                    ? `https:${details.cover.url.replace('t_thumb', 't_cover_big')}`
+                    : null,
+                })
+            } catch (error) {
+                console.error(error.message)
+                setError(error.message)
+            }
+        }
+
+        fetchGameDetails()
+    }, [selectedGame])
 
     const handleAddSubGoal = () => {
         const trimmedSubGoal = subGoal.trim();
@@ -69,21 +105,37 @@ export default function SessionForm({ onAddSession }) {
 
     const handleGameNameChange = (event) => {
         setGameName(event.target.value)
+        setSelectedGame(null)
+        setSelectedGameDetails(null)
         setSuggestions([])
         setError('')
     }
 
     const handleSelectGame = (suggestion) => {
-        setGameName(suggestion.name);
-        setSuggestions([]);
+        setSelectedGame(suggestion)
+        setGameName(suggestion.name)
+        setSuggestions([])
+        setError('')
     }
 
     const handleSubmit = (event) => {
         event.preventDefault()
 
+        if (!selectedGame) {
+            setError('Please select a game from the suggestions.')
+            return
+        }
+
+        if (!selectedGameDetails) {
+            setError('Game details are still loading. Please wait and try again.')
+            return
+        }
+
         const newSession = {
             id: crypto.randomUUID(),
-            game: gameName,
+            game: selectedGame.name,
+            gameApiId: selectedGameDetails.id,
+            artwork: selectedGameDetails.artwork,
             currentGoal,
             subGoals: subGoals.map((item) => ({
                 ...item,
@@ -97,6 +149,7 @@ export default function SessionForm({ onAddSession }) {
         onAddSession(newSession)
 
         setGameName('')
+        setSelectedGame(null)
         setCurrentGoal('')
         setSubGoals([])
         setSubGoal('')
