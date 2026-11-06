@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 export default function SessionForm({ onAddSession }) {
     const [suggestions, setSuggestions] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isDetailsLoading, setIsDetailsLoading] = useState(false);
     const [error, setError] = useState('');
 
     const [gameName, setGameName] = useState('');
@@ -51,9 +52,17 @@ export default function SessionForm({ onAddSession }) {
     }, [gameName])
 
     useEffect(() => {
-        if (!selectedGame) return
+        if (!selectedGame) {
+            setSelectedGameDetails(null)
+            setIsDetailsLoading(false)
+            return
+        }
 
         const fetchGameDetails = async () => {
+            setIsDetailsLoading(true)
+            setSelectedGameDetails(null)
+            setError('')
+            
             try {
                 const response = await fetch(
                     `https://app.lizardbyte.dev/GameDB/games/${selectedGame.id}.json`,
@@ -75,6 +84,8 @@ export default function SessionForm({ onAddSession }) {
             } catch (error) {
                 console.error(error.message)
                 setError(error.message)
+            } finally {
+                setIsDetailsLoading(false)
             }
         }
 
@@ -113,6 +124,7 @@ export default function SessionForm({ onAddSession }) {
 
     const handleSelectGame = (suggestion) => {
         setSelectedGame(suggestion)
+        setSelectedGameDetails(null)
         setGameName(suggestion.name)
         setSuggestions([])
         setError('')
@@ -150,6 +162,7 @@ export default function SessionForm({ onAddSession }) {
 
         setGameName('')
         setSelectedGame(null)
+        setSelectedGameDetails(null)
         setCurrentGoal('')
         setSubGoals([])
         setSubGoal('')
@@ -270,7 +283,12 @@ export default function SessionForm({ onAddSession }) {
                     />
                 </fieldset>
 
-                <button type="submit">Save</button>
+                <button 
+                    type="submit"
+                    disabled={isDetailsLoading || !selectedGameDetails}
+                >
+                    {isDetailsLoading ? 'Loading Artwork...' : 'Save'}
+                </button>
             </form>
         </>
     )
